@@ -7,8 +7,13 @@ import json
 import sys
 from typing import Optional
 
-from .agent import MultiModelChatAgent
-from .config import build_default_providers, parse_provider_selection
+if __package__ in (None, ""):
+    import pathlib
+
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+
+from ai_agent.agent import MultiModelChatAgent
+from ai_agent.config import build_default_providers, parse_provider_selection
 
 
 def create_parser() -> argparse.ArgumentParser:
