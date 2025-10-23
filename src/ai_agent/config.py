@@ -78,7 +78,9 @@ def parse_provider_selection(selection: Optional[str], *, available: Iterable[st
     selection = selection.lower()
     names: Dict[str, str] = {name.lower(): name for name in available}
     if selection not in names:
-        raise KeyError(f"Provider '{selection}' is not available. Choices: {', '.join(sorted(available))}")
+        raise ValueError(
+            f"Provider '{selection}' is not available. Choices: {', '.join(sorted(available))}"
+        )
     return names[selection]
 
 
