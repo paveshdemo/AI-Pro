@@ -18,7 +18,7 @@ responses across providers or fall back to another model when one is unavailable
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - [`requests`](https://requests.readthedocs.io/) library (installed automatically when the
   package is installed via `pip`)
 - Valid API keys for the providers you want to use:
