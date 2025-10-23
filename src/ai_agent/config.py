@@ -23,14 +23,12 @@ def _load_env_file(path: Path) -> None:
     except OSError:
         return
 
-    data = data.lstrip("\ufeff")
-
     for raw_line in data.splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        key = key.strip().lstrip("\ufeff")
+        key = key.strip()
         value = value.strip()
         if (value.startswith("\"") and value.endswith("\"")) or (
             value.startswith("'") and value.endswith("'")
