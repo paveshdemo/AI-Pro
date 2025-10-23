@@ -37,7 +37,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     providers = build_default_providers()
     agent = MultiModelChatAgent(providers)
 
-    provider_name = parse_provider_selection(args.provider, available=agent.providers.keys())
+    try:
+        provider_name = parse_provider_selection(args.provider, available=agent.providers.keys())
+    except ValueError as exc:
+        parser.error(str(exc))
+
     agent.set_default_provider(provider_name)
 
     response = agent.chat(
