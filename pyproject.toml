@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-agent"
+version = "0.1.0"
+description = "Multi-provider AI chat agent with OpenAI, Anthropic, and Google Gemini adapters."
+authors = [{name = "Example Author", email = "author@example.com"}]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.31",
+]
+
+[project.urls]
+Homepage = "https://example.com/ai-agent"
+
+[project.scripts]
+ai-agent = "ai_agent.cli:main"
