@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Iterable, List, Sequence
 
-from .providers.anthropic_provider import AnthropicProvider
 from .providers.base import LLMProvider
-from .providers.google_provider import GoogleGeminiProvider
 from .providers.openai_provider import OpenAIProvider
 
 
@@ -43,12 +41,19 @@ def load_environment_from_files(filenames: Sequence[str] = DEFAULT_ENV_FILENAMES
     seen: set[Path] = set()
     search_roots = {Path.cwd(), *Path(__file__).resolve().parents}
     for root in search_roots:
+        if not root.exists():
+            continue
         for name in filenames:
-            candidate = (root / name).resolve()
-            if candidate in seen or not candidate.is_file():
-                continue
-            seen.add(candidate)
-            _load_env_file(candidate)
+            if root.is_file():
+                candidates: Iterable[Path] = []
+            else:
+                candidates = root.rglob(name)
+            for candidate in candidates:
+                candidate = candidate.resolve()
+                if candidate in seen or not candidate.is_file():
+                    continue
+                seen.add(candidate)
+                _load_env_file(candidate)
 
 
 def build_default_providers() -> List[LLMProvider]:
@@ -56,48 +61,16 @@ def build_default_providers() -> List[LLMProvider]:
 
     load_environment_from_files()
 
-    providers: List[LLMProvider] = []
-    if os.getenv("OPENAI_API_KEY"):
-        providers.append(OpenAIProvider())
-    if os.getenv("ANTHROPIC_API_KEY"):
-        providers.append(AnthropicProvider())
-    if os.getenv("GOOGLE_API_KEY"):
-        providers.append(GoogleGeminiProvider())
-    if not providers:
+    try:
+        provider = OpenAIProvider()
+    except ValueError as exc:
         raise RuntimeError(
-            "No providers configured. Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or GOOGLE_API_KEY."
-        )
-    return providers
-
-
-_PROVIDER_ENV_HINTS: Dict[str, str] = {
-    "openai": "Set the OPENAI_API_KEY environment variable or add it to your .env file.",
-    "anthropic": "Set the ANTHROPIC_API_KEY environment variable or add it to your .env file.",
-    "google": "Set the GOOGLE_API_KEY environment variable or add it to your .env file.",
-}
-
-
-def parse_provider_selection(selection: Optional[str], *, available: Iterable[str]) -> str:
-    """Validate the provider selection from CLI or user input."""
-
-    if not selection:
-        return next(iter(available))
-    names: Dict[str, str] = {name.lower(): name for name in available}
-    selection_normalized = selection.lower()
-    provider_name = names.get(selection_normalized)
-    if provider_name is None:
-        available_list = sorted(names.values())
-        choices_display = ", ".join(available_list) if available_list else "none"
-        hint = _PROVIDER_ENV_HINTS.get(selection_normalized)
-        hint_suffix = f" {hint}" if hint else ""
-        raise ValueError(
-            f"Provider '{selection}' is not available. Choices: {choices_display}.{hint_suffix}"
-        )
-    return provider_name
+            "No providers configured. Set the OPENAI_API_KEY environment variable or add it to keys.env."
+        ) from exc
+    return [provider]
 
 
 __all__ = [
     "build_default_providers",
     "load_environment_from_files",
-    "parse_provider_selection",
 ]
