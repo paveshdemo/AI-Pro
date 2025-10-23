@@ -70,18 +70,30 @@ def build_default_providers() -> List[LLMProvider]:
     return providers
 
 
+_PROVIDER_ENV_HINTS: Dict[str, str] = {
+    "openai": "Set the OPENAI_API_KEY environment variable or add it to your .env file.",
+    "anthropic": "Set the ANTHROPIC_API_KEY environment variable or add it to your .env file.",
+    "google": "Set the GOOGLE_API_KEY environment variable or add it to your .env file.",
+}
+
+
 def parse_provider_selection(selection: Optional[str], *, available: Iterable[str]) -> str:
     """Validate the provider selection from CLI or user input."""
 
     if not selection:
         return next(iter(available))
-    selection = selection.lower()
     names: Dict[str, str] = {name.lower(): name for name in available}
-    if selection not in names:
+    selection_normalized = selection.lower()
+    provider_name = names.get(selection_normalized)
+    if provider_name is None:
+        available_list = sorted(names.values())
+        choices_display = ", ".join(available_list) if available_list else "none"
+        hint = _PROVIDER_ENV_HINTS.get(selection_normalized)
+        hint_suffix = f" {hint}" if hint else ""
         raise ValueError(
-            f"Provider '{selection}' is not available. Choices: {', '.join(sorted(available))}"
+            f"Provider '{selection}' is not available. Choices: {choices_display}.{hint_suffix}"
         )
-    return names[selection]
+    return provider_name
 
 
 __all__ = [
