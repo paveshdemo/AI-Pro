@@ -242,6 +242,46 @@ body {
   line-height: 1.6;
 }
 
+.message__body mjx-container[jax="CHTML"] {
+  color: var(--text-primary);
+  font-size: 1.02rem;
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+}
+
+.message__body mjx-container[jax="CHTML"][display="true"] {
+  display: block;
+  padding: 18px 22px;
+  margin: 1.1em 0;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(159, 123, 255, 0.22);
+  box-shadow: 0 24px 60px rgba(75, 35, 120, 0.32);
+}
+
+.message__body mjx-container[jax="CHTML"][display="false"] {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0.25em;
+}
+
+.message__body mjx-container[jax="CHTML"] mjx-math {
+  font-weight: 500;
+}
+
+.message__body mjx-container[jax="CHTML"] mjx-mi {
+  color: var(--text-primary);
+}
+
+.message__body mjx-container[jax="CHTML"] mjx-mn,
+.message__body mjx-container[jax="CHTML"] mjx-mo {
+  color: var(--text-secondary);
+}
+
+.message__body mjx-container[jax="CHTML"] mjx-mfrac {
+  padding: 0 6px;
+}
+
 .message__body p,
 .message__body ul,
 .message__body ol,
