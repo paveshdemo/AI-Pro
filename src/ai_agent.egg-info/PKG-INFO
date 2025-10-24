@@ -1,0 +1,109 @@
+Metadata-Version: 2.4
+Name: ai-agent
+Version: 0.1.0
+Summary: Multi-provider AI chat agent with OpenAI, Anthropic, and Google Gemini adapters.
+Author-email: Pavesh <pavesh2003@gmail.com>
+License: MIT
+Project-URL: Homepage, https://example.com/ai-agent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.31
+
+# Multi-Provider AI Chat Agent
+
+This repository contains a lightweight Python toolkit for routing chat prompts to multiple
+large-language-model (LLM) providers—including OpenAI (ChatGPT), Anthropic Claude Sonnet,
+and Google Gemini. The agent exposes a unified interface so you can experiment with
+responses across providers or fall back to another model when one is unavailable.
+
+## Features
+
+- **Unified agent orchestration** – register any combination of providers and route
+  prompts dynamically.
+- **Provider-specific adapters** – REST API clients for OpenAI Chat Completions, Anthropic
+  Claude Messages, and Google Gemini Generate Content endpoints.
+- **Conversation memory** – maintain multi-turn conversations with automatic message
+  tracking per provider or custom conversation identifiers.
+- **CLI utility** – interact with the agent directly from the terminal to compare model
+  outputs.
+
+## Requirements
+
+- Python 3.11+
+- [`requests`](https://requests.readthedocs.io/) library (installed automatically when the
+  package is installed via `pip`)
+- Valid API keys for the providers you want to use:
+  - `OPENAI_API_KEY`
+  - `ANTHROPIC_API_KEY`
+  - `GOOGLE_API_KEY`
+
+Optionally, you may override the default API base URLs using `OPENAI_BASE_URL`,
+`ANTHROPIC_BASE_URL`, or `GOOGLE_GEMINI_BASE_URL` if you want to target proxies or
+self-hosted gateways.
+
+## Installation
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+## Usage
+
+### CLI
+
+```bash
+export OPENAI_API_KEY=sk-...
+export ANTHROPIC_API_KEY=anthropic-...
+export GOOGLE_API_KEY=google-...
+
+python -m ai_agent.cli "Explain the theory of relativity" --provider openai
+```
+
+If you omit `--provider`, the agent automatically picks the first configured provider.
+You can pipe a prompt via standard input by omitting the positional prompt argument.
+
+To continue a conversation across multiple invocations, supply a `--conversation` id.
+
+```bash
+echo "Give me a summary of quantum mechanics" | python -m ai_agent.cli --conversation physics
+```
+
+To inspect raw JSON output instead of a plain string, pass `--json`.
+
+### Embedding in Python Code
+
+```python
+from ai_agent.agent import MultiModelChatAgent
+from ai_agent.providers.openai_provider import OpenAIProvider
+from ai_agent.providers.anthropic_provider import AnthropicProvider
+from ai_agent.providers.google_provider import GoogleGeminiProvider
+
+providers = [
+    OpenAIProvider(model="gpt-4o-mini"),
+    AnthropicProvider(model="claude-3-5-sonnet-20240620"),
+    GoogleGeminiProvider(model="gemini-1.5-pro"),
+]
+
+agent = MultiModelChatAgent(providers, default_provider="openai")
+response = agent.chat("Draft a short poem about the ocean.")
+print(response)
+```
+
+Switch providers at runtime:
+
+```python
+agent.set_default_provider("google")
+print(agent.chat("Summarize the latest AI research."))
+```
+
+## Extending the Agent
+
+Add new providers by subclassing `LLMProvider` and implementing the `generate` method.
+Then register your provider with `MultiModelChatAgent`.
+
+## Disclaimer
+
+This project does not ship with API keys. Ensure you follow the terms of service for each
+provider and secure your credentials appropriately.

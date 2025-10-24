@@ -74,14 +74,60 @@ function renderMessageContent(content = "") {
 
   configureMarkdown();
 
-  let html = text.replace(/\n/g, "<br />");
+  let html = text;
 
   if (typeof marked !== "undefined") {
-    html = marked.parse(text);
+    // Preserve LaTeX formulas by temporarily replacing them
+    const mathPlaceholders = [];
+    
+    // Protect display math ($$...$$)
+    html = html.replace(/\$\$([\s\S]+?)\$\$/g, (match, formula) => {
+      const placeholder = `MATH_DISPLAY_${mathPlaceholders.length}`;
+      mathPlaceholders.push({ type: 'display', content: match });
+      return placeholder;
+    });
+    
+    // Protect inline math ($...$)
+    html = html.replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+      const placeholder = `MATH_INLINE_${mathPlaceholders.length}`;
+      mathPlaceholders.push({ type: 'inline', content: match });
+      return placeholder;
+    });
+    
+    // Protect LaTeX delimiters \[...\] and \(...\)
+    html = html.replace(/\\\[([\s\S]+?)\\\]/g, (match, formula) => {
+      const placeholder = `MATH_DISPLAY_${mathPlaceholders.length}`;
+      mathPlaceholders.push({ type: 'display', content: match });
+      return placeholder;
+    });
+    
+    html = html.replace(/\\\(([\s\S]+?)\\\)/g, (match, formula) => {
+      const placeholder = `MATH_INLINE_${mathPlaceholders.length}`;
+      mathPlaceholders.push({ type: 'inline', content: match });
+      return placeholder;
+    });
+    
+    // Parse markdown
+    html = marked.parse(html);
+    
+    // Restore LaTeX formulas
+    mathPlaceholders.forEach((item, index) => {
+      if (item.type === 'display') {
+        html = html.replace(`MATH_DISPLAY_${index}`, item.content);
+      } else {
+        html = html.replace(`MATH_INLINE_${index}`, item.content);
+      }
+    });
+  } else {
+    html = text.replace(/\n/g, "<br />");
   }
 
   if (typeof DOMPurify !== "undefined") {
-    html = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+    html = DOMPurify.sanitize(html, { 
+      USE_PROFILES: { html: true },
+      ADD_TAGS: ['mjx-container', 'mjx-assistive-mml'],
+      ADD_ATTR: ['aria-hidden']
+    });
   }
 
   return html;
