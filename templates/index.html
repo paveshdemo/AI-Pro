@@ -96,6 +96,12 @@
             ["\\[", "\\]"]
           ],
         },
+        startup: {
+          ready() {
+            MathJax.startup.defaultReady();
+            window.dispatchEvent(new Event("mathjax-ready"));
+          },
+        },
       };
     </script>
     <script

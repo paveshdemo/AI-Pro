@@ -4,6 +4,30 @@ const userInput = document.getElementById("userInput");
 const statusMessage = document.getElementById("statusMessage");
 const loadingIndicator = document.getElementById("loadingIndicator");
 const messageTemplate = document.getElementById("messageTemplate");
+const pendingMathElements = new Set();
+
+let mathJaxReady = Boolean(
+  window.MathJax && (window.MathJax.typesetPromise || window.MathJax.typeset)
+);
+
+function schedulePendingMathFlush() {
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(flushPendingMath);
+  } else {
+    setTimeout(flushPendingMath, 0);
+  }
+}
+
+if (mathJaxReady) {
+  schedulePendingMathFlush();
+} else {
+  window.addEventListener("mathjax-ready", () => {
+    mathJaxReady = Boolean(
+      window.MathJax && (window.MathJax.typesetPromise || window.MathJax.typeset)
+    );
+    schedulePendingMathFlush();
+  });
+}
 
 let conversationHistory = [];
 
@@ -63,8 +87,33 @@ function renderMessageContent(content = "") {
   return html;
 }
 
+function flushPendingMath() {
+  if (!mathJaxReady || typeof window.MathJax === "undefined") {
+    return;
+  }
+
+  const mathJax = window.MathJax;
+  const elements = Array.from(pendingMathElements);
+  pendingMathElements.clear();
+
+  if (elements.length === 0) {
+    return;
+  }
+
+  if (typeof mathJax.typesetPromise === "function") {
+    mathJax.typesetPromise(elements).catch(() => {});
+  } else if (typeof mathJax.typeset === "function") {
+    mathJax.typeset(elements);
+  }
+}
+
 function typesetMath(element) {
-  if (!element || typeof window.MathJax === "undefined") {
+  if (!element) {
+    return;
+  }
+
+  if (!mathJaxReady || typeof window.MathJax === "undefined") {
+    pendingMathElements.add(element);
     return;
   }
 
