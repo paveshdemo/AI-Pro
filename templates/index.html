@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Neuro AI | Conversational Intelligence</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div class="hero__content">
+          <div class="badge">Neuro AI</div>
+          <h1>Unlock strategic insights with Neuro AI.</h1>
+          <p>
+            Your personal intelligence partner designed to reason, plan, and
+            execute with precision. Ask a question, draft content, or explore new
+            ideas—the conversation begins now.
+          </p>
+        </div>
+        <div class="hero__glow"></div>
+      </header>
+
+      <main class="chat">
+        <section class="chat__window" id="chatWindow" aria-live="polite"></section>
+
+        <form class="chat__form" id="chatForm" autocomplete="off">
+          <label class="sr-only" for="userInput">Message Neuro AI</label>
+          <textarea
+            id="userInput"
+            name="message"
+            rows="1"
+            placeholder="Ask Neuro AI anything..."
+            required
+          ></textarea>
+          <button type="submit" class="send" aria-label="Send message">
+            <span>Send</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"
+                fill="currentColor"
+              />
+            </svg>
+          </button>
+        </form>
+      </main>
+
+      <footer class="footer">
+        <div class="footer__status" id="statusMessage" role="status"></div>
+        <p>Built with vision by Neuro AI &mdash; your cognitive co-pilot.</p>
+      </footer>
+    </div>
+
+    <template id="messageTemplate">
+      <article class="message">
+        <div class="message__avatar" aria-hidden="true"></div>
+        <div class="message__bubble">
+          <header class="message__meta">
+            <span class="message__author"></span>
+            <time class="message__timestamp"></time>
+          </header>
+          <div class="message__body"></div>
+        </div>
+      </article>
+    </template>
+
+    <div class="loading" id="loadingIndicator" hidden>
+      <span class="loading__spinner" aria-hidden="true"></span>
+      <span class="loading__text">Neuro AI is thinking...</span>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+  </body>
+</html>
