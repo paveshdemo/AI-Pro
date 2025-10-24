@@ -74,6 +74,36 @@
       <span class="loading__text">Neuro AI is thinking...</span>
     </div>
 
+    <script
+      src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script>
+      window.MathJax = {
+        tex: {
+          inlineMath: [
+            ["$", "$"],
+            ["\\(", "\\)"]
+          ],
+          displayMath: [
+            ["$$", "$$"],
+            ["\\[", "\\]"]
+          ],
+        },
+      };
+    </script>
+    <script
+      id="MathJax-script"
+      async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+      crossorigin="anonymous"
+    ></script>
     <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
   </body>
 </html>
