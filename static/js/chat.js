@@ -20,11 +20,61 @@ function appendMessage(role, content, timestamp = new Date()) {
 
   article.classList.add(`message--${role}`);
   author.textContent = role === "assistant" ? "Neuro AI" : "You";
-  body.textContent = content.trim();
+  body.innerHTML = renderMessageContent(content);
   time.textContent = formatTime(timestamp);
 
   chatWindow.appendChild(template);
   chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: "smooth" });
+
+  typesetMath(body);
+}
+
+function configureMarkdown() {
+  if (typeof marked === "undefined") {
+    return;
+  }
+
+  if (configureMarkdown.initialized) {
+    return;
+  }
+
+  marked.setOptions({ breaks: true, gfm: true });
+  configureMarkdown.initialized = true;
+}
+
+function renderMessageContent(content = "") {
+  const text = content.trim();
+  if (!text) {
+    return "";
+  }
+
+  configureMarkdown();
+
+  let html = text.replace(/\n/g, "<br />");
+
+  if (typeof marked !== "undefined") {
+    html = marked.parse(text);
+  }
+
+  if (typeof DOMPurify !== "undefined") {
+    html = DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+  }
+
+  return html;
+}
+
+function typesetMath(element) {
+  if (!element || typeof window.MathJax === "undefined") {
+    return;
+  }
+
+  const mathJax = window.MathJax;
+
+  if (typeof mathJax.typesetPromise === "function") {
+    mathJax.typesetPromise([element]).catch(() => {});
+  } else if (typeof mathJax.typeset === "function") {
+    mathJax.typeset([element]);
+  }
 }
 
 function setLoading(isLoading) {
