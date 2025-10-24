@@ -1,17 +1,11 @@
-"""Entry point for the ChatGPT-like console chatbot project.
+"""Entry point for the Neuro AI web application."""
 
-This module wires together the MVC components—model, view, and controller—and
-starts the interactive chat loop when executed as a script.
-"""
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 
-from controller.chat_controller import ChatController
-from model.ai_engine import AIEngine
-from view.console_ui import ConsoleUI
+from web_app import create_app
 
 
 def load_environment_from_file(filename: str = "keys.env") -> None:
@@ -37,24 +31,15 @@ def load_environment_from_file(filename: str = "keys.env") -> None:
         os.environ.setdefault(key, value)
 
 
-def supports_color() -> bool:
-    """Determine whether ANSI color codes should be used for output."""
-
-    if os.getenv("NO_COLOR") is not None:
-        return False
-    return sys.stdout.isatty()
-
-
 def main() -> None:
-    """Run the ChatGPT-like chatbot using the MVC components."""
+    """Run the Neuro AI Flask development server."""
 
     load_environment_from_file()
 
-    console_ui = ConsoleUI(enable_color=supports_color())
-
-    with AIEngine() as engine:
-        controller = ChatController(view=console_ui, model=engine)
-        controller.run()
+    app = create_app()
+    port = int(os.getenv("PORT", "8000"))
+    debug = os.getenv("FLASK_DEBUG") == "1"
+    app.run(host="0.0.0.0", port=port, debug=debug)
 
 
 if __name__ == "__main__":  # pragma: no cover - script entry point
