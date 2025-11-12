@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 from typing import NoReturn
 
-from model.document_store import (
+# Ensure the project root is on ``sys.path`` so ``model`` can be imported when the
+# script is executed via ``python scripts/ingest_document.py``.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from model.document_store import (  # noqa: E402  - imported after path tweak
     DocumentStore,
     DocumentStoreError,
     EmbeddingClient,
@@ -39,11 +46,14 @@ def build_parser() -> argparse.ArgumentParser:
 def ingest(args: argparse.Namespace) -> int:
     """Ingest the requested PDF and return an exit status code."""
 
-    store = DocumentStore(index_path=args.index) if args.index else DocumentStore()
+    pdf_path = Path(args.pdf).expanduser().resolve()
+    index_path = Path(args.index).expanduser().resolve() if args.index else None
+
+    store = DocumentStore(index_path=index_path) if index_path else DocumentStore()
 
     try:
         with EmbeddingClient() as client:
-            meta = store.ingest_pdf(args.pdf, client, title=args.title)
+            meta = store.ingest_pdf(pdf_path, client, title=args.title)
     except (DocumentStoreError, EmbeddingClientError) as error:
         print(f"[error] {error}")
         return 1
