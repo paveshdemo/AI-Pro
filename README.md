@@ -47,3 +47,18 @@ python main.py
 
 The original console components remain in the repository if you would like to study
 or extend the MVC implementation.
+
+## Personalising with Lecture Notes
+
+Neuro AI can ground its answers in your own lecture material. Use the ingestion
+script to embed any PDF into the local document store:
+
+```bash
+python scripts/ingest_document.py /path/to/lecture.pdf --title "Week 05 - Databases"
+```
+
+Behind the scenes the script extracts the PDF text, generates OpenAI embeddings,
+and stores them in `data/document_index.json`. When you next chat with Neuro AI
+the assistant will automatically retrieve the most relevant lecture snippets and
+inject them into the system prompt so responses stay aligned with the SLIIT
+curriculum.
