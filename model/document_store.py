@@ -6,7 +6,6 @@ import json
 import math
 import os
 from dataclasses import dataclass, field
-from functools import lru_cache
 from pathlib import Path
 from typing import Iterable, List, MutableMapping, Optional, Sequence, Tuple
 from uuid import uuid4
@@ -21,40 +20,6 @@ class DocumentStoreError(RuntimeError):
 
 class EmbeddingClientError(RuntimeError):
     """Raised when requesting embeddings from the OpenAI API fails."""
-
-
-@lru_cache(maxsize=1)
-def _load_openai_key_from_file(filename: str = "keys.env") -> None:
-    """Populate ``OPENAI_API_KEY`` from ``keys.env`` if available.
-
-    The ingestion scripts may be executed in environments where the user has
-    placed their credentials in a ``keys.env`` file (as suggested in the
-    project README) instead of exporting them manually. Rather than requiring
-    each caller to duplicate the loading logic, the embedding client performs a
-    lightweight, cached check that mirrors :func:`main.load_environment_from_file`.
-    """
-
-    env_path = Path(__file__).resolve().parent.parent / filename
-    if not env_path.is_file():
-        return
-
-    try:
-        contents = env_path.read_text(encoding="utf-8")
-    except OSError:
-        # If the file cannot be read we simply fall back to the existing
-        # environment without raising, matching the behaviour of the runtime
-        # helper used by the Flask entry point.
-        return
-
-    for raw_line in contents.splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
-        if key:
-            os.environ.setdefault(key, value)
 
 
 @dataclass(slots=True)
@@ -116,7 +81,6 @@ class EmbeddingClient:
     def embed(self, texts: Sequence[str]) -> List[List[float]]:
         """Return OpenAI embeddings for a batch of texts."""
 
-        _load_openai_key_from_file()
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
             raise EmbeddingClientError(
@@ -141,24 +105,8 @@ class EmbeddingClient:
                 "Timed out while waiting for the OpenAI embeddings API. Please try again later."
             ) from exc
         except requests.exceptions.RequestException as exc:  # pragma: no cover - runtime scenario
-            details = []
-            if exc.response is not None:
-                status = exc.response.status_code
-                details.append(f"status code {status}")
-                try:
-                    body_text = exc.response.text.strip()
-                except Exception:  # pragma: no cover - best-effort diagnostics
-                    body_text = ""
-                if body_text:
-                    details.append(body_text)
-            else:
-                message = str(exc).strip()
-                if message:
-                    details.append(message)
-
-            extra = f" ({'; '.join(details)})" if details else ""
             raise EmbeddingClientError(
-                "An error occurred while communicating with the OpenAI embeddings API." + extra
+                "An error occurred while communicating with the OpenAI embeddings API."
             ) from exc
 
         try:

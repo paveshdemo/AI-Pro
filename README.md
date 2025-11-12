@@ -28,21 +28,7 @@ Install dependencies with:
 
 ```bash
 python -m venv .venv
-```
-
-Activate the virtual environment:
-
-```bash
-# macOS / Linux
 source .venv/bin/activate
-
-# Windows (PowerShell)
-.\.venv\Scripts\Activate
-```
-
-Then install the required packages:
-
-```bash
 pip install -r requirements.txt
 ```
 
@@ -76,17 +62,3 @@ and stores them in `data/document_index.json`. When you next chat with Neuro AI
 the assistant will automatically retrieve the most relevant lecture snippets and
 inject them into the system prompt so responses stay aligned with the SLIIT
 curriculum.
-
-## Custom Project Files
-
-For bespoke study material or project notes, add your own PDFs to the
-`project_files/` directory in the repository root. Once you have copied files into
-this folder, sync them with the document store:
-
-```bash
-python scripts/ingest_project_files.py
-```
-
-The script discovers every PDF in the folder (including nested directories) and
-processes them in one go. After the embeddings are generated, Neuro AI will surface
-relevant excerpts from your documents during conversations for more tailored answers.
