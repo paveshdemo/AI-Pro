@@ -28,7 +28,21 @@ Install dependencies with:
 
 ```bash
 python -m venv .venv
+```
+
+Activate the virtual environment:
+
+```bash
+# macOS / Linux
 source .venv/bin/activate
+
+# Windows (PowerShell)
+.\.venv\Scripts\Activate
+```
+
+Then install the required packages:
+
+```bash
 pip install -r requirements.txt
 ```
 

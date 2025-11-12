@@ -141,8 +141,24 @@ class EmbeddingClient:
                 "Timed out while waiting for the OpenAI embeddings API. Please try again later."
             ) from exc
         except requests.exceptions.RequestException as exc:  # pragma: no cover - runtime scenario
+            details = []
+            if exc.response is not None:
+                status = exc.response.status_code
+                details.append(f"status code {status}")
+                try:
+                    body_text = exc.response.text.strip()
+                except Exception:  # pragma: no cover - best-effort diagnostics
+                    body_text = ""
+                if body_text:
+                    details.append(body_text)
+            else:
+                message = str(exc).strip()
+                if message:
+                    details.append(message)
+
+            extra = f" ({'; '.join(details)})" if details else ""
             raise EmbeddingClientError(
-                "An error occurred while communicating with the OpenAI embeddings API."
+                "An error occurred while communicating with the OpenAI embeddings API." + extra
             ) from exc
 
         try:
