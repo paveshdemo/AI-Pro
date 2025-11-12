@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 from typing import Iterable, List
 
-from model.document_store import (
+# Make sure ``model`` can be imported when the script is executed directly.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from model.document_store import (  # noqa: E402  - imported after path tweak
     DocumentStore,
     DocumentStoreError,
     EmbeddingClient,
@@ -16,6 +22,8 @@ from model.document_store import (
 
 def iter_pdf_files(root: Path) -> Iterable[Path]:
     """Yield all PDF files within ``root`` (recursively)."""
+
+    root = root.expanduser().resolve()
 
     if not root.exists():
         return []
@@ -32,9 +40,10 @@ def iter_pdf_files(root: Path) -> Iterable[Path]:
 def ingest_directory(directory: Path) -> int:
     """Ingest every PDF in ``directory`` and return an exit status code."""
 
-    pdfs = list(iter_pdf_files(directory))
+    target_directory = Path(directory).expanduser().resolve()
+    pdfs = list(iter_pdf_files(target_directory))
     if not pdfs:
-        print(f"[info] No PDF files found in {directory}.")
+        print(f"[info] No PDF files found in {target_directory}.")
         return 0
 
     try:
